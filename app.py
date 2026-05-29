@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# LOAD MODEL
+# LOAD FILES
 # =========================================================
 
 @st.cache_resource
@@ -28,9 +28,11 @@ def load_files():
 
     scaler = joblib.load("scaler.pkl")
 
-    return model, scaler
+    features = joblib.load("features.pkl")
 
-model, scaler = load_files()
+    return model, scaler, features
+
+model, scaler, features = load_files()
 
 # =========================================================
 # CUSTOM CSS
@@ -47,46 +49,46 @@ html, body, [class*="css"] {
     color: white;
 }
 
-/* Main Container */
+/* MAIN */
 .block-container {
     padding-top: 2rem;
     padding-left: 2rem;
     padding-right: 2rem;
 }
 
-/* Sidebar */
+/* SIDEBAR */
 section[data-testid="stSidebar"] {
     background: #111827;
     border-right: 1px solid #1F2937;
     width: 320px !important;
 }
 
-/* Sidebar Text */
+/* SIDEBAR TEXT */
 section[data-testid="stSidebar"] * {
     color: white !important;
 }
 
-/* Hide Streamlit Branding */
+/* HIDE STREAMLIT */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
 
-/* Title */
+/* TITLE */
 .main-title {
-    font-size: 48px;
+    font-size: 50px;
     font-weight: 700;
     color: white;
     margin-bottom: 5px;
 }
 
-/* Subtitle */
+/* SUBTITLE */
 .sub-title {
     color: #94A3B8;
     font-size: 18px;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
 }
 
-/* Cards */
+/* CARDS */
 .metric-card {
     background: linear-gradient(145deg, #111827, #1E293B);
     padding: 30px;
@@ -96,21 +98,21 @@ header {visibility: hidden;}
     box-shadow: 0px 10px 25px rgba(0,0,0,0.35);
 }
 
-/* Metric Values */
+/* METRIC VALUE */
 .metric-value {
-    font-size: 38px;
+    font-size: 36px;
     font-weight: 700;
     color: white;
 }
 
-/* Metric Labels */
+/* METRIC LABEL */
 .metric-label {
     font-size: 16px;
     color: #CBD5E1;
     margin-top: 8px;
 }
 
-/* Result Card */
+/* RESULT CARD */
 .result-card {
     background: linear-gradient(145deg, #111827, #1E293B);
     padding: 35px;
@@ -119,7 +121,7 @@ header {visibility: hidden;}
     box-shadow: 0px 10px 25px rgba(0,0,0,0.35);
 }
 
-/* Button */
+/* BUTTON */
 .stButton > button {
     width: 100%;
     height: 58px;
@@ -137,7 +139,7 @@ header {visibility: hidden;}
     background: linear-gradient(to right, #00ccff, #0066ff);
 }
 
-/* Progress Bar */
+/* PROGRESS BAR */
 .stProgress > div > div > div {
     background-color: #00ccff;
 }
@@ -157,7 +159,7 @@ st.markdown("""
 
 st.markdown("""
 <div class="sub-title">
-AI-Powered Loan Approval & Risk Analysis System
+AI-Powered Loan Approval & Credit Risk Analysis System
 </div>
 """, unsafe_allow_html=True)
 
@@ -205,7 +207,7 @@ with st.sidebar:
     )
 
 # =========================================================
-# DISPLAY CARDS
+# TOP METRICS
 # =========================================================
 
 c1, c2, c3 = st.columns(3)
@@ -233,7 +235,7 @@ with c3:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-value">{employment_years} Years</div>
-        <div class="metric-label">Employment Experience</div>
+        <div class="metric-label">Experience</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -246,12 +248,44 @@ st.markdown("<br>", unsafe_allow_html=True)
 input_data = pd.DataFrame([{
 
     "Age": age,
+
     "Income": income,
+
     "LoanAmount": loan_amount,
+
     "CreditScore": credit_score,
-    "EmploymentYears": employment_years
+
+    "MonthsEmployed": employment_years * 12,
+
+    "NumCreditLines": 4,
+
+    "InterestRate": 12.5,
+
+    "LoanTerm": 36,
+
+    "DTIRatio": 0.35,
+
+    "Education": 1,
+
+    "EmploymentType": 1,
+
+    "MaritalStatus": 1,
+
+    "HasMortgage": 0,
+
+    "HasDependents": 0,
+
+    "LoanPurpose": 2,
+
+    "HasCoSigner": 0
 
 }])
+
+# =========================================================
+# MATCH TRAINING FEATURE ORDER
+# =========================================================
+
+input_data = input_data[features]
 
 # =========================================================
 # PREDICTION
@@ -261,10 +295,10 @@ if st.button("Predict Loan Approval"):
 
     try:
 
-        # Scale Input
+        # SCALE DATA
         scaled_data = scaler.transform(input_data)
 
-        # Prediction
+        # PREDICTION
         prediction = model.predict(scaled_data)[0]
 
         probability = model.predict_proba(
@@ -285,7 +319,7 @@ if st.button("Predict Loan Approval"):
 
             risk = "🟠 MEDIUM RISK"
 
-            decision = "⚠️ Review Required"
+            decision = "⚠️ Manual Review Required"
 
         else:
 
@@ -322,10 +356,10 @@ if st.button("Predict Loan Approval"):
             """, unsafe_allow_html=True)
 
         # =================================================
-        # CUSTOMER SEGMENT
+        # CUSTOMER ANALYSIS
         # =================================================
 
-        st.markdown("## Customer Profile")
+        st.markdown("## Customer Analysis")
 
         if income > 100000 and credit_score > 700:
 

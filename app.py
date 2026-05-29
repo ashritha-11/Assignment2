@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -18,7 +19,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# LOAD FILES
+# LOAD MODEL FILES
 # =========================================================
 
 @st.cache_resource
@@ -49,7 +50,7 @@ html, body, [class*="css"] {
     color: white;
 }
 
-/* MAIN */
+/* MAIN CONTAINER */
 .block-container {
     padding-top: 2rem;
     padding-left: 2rem;
@@ -75,7 +76,7 @@ header {visibility: hidden;}
 
 /* TITLE */
 .main-title {
-    font-size: 50px;
+    font-size: 52px;
     font-weight: 700;
     color: white;
     margin-bottom: 5px;
@@ -88,7 +89,7 @@ header {visibility: hidden;}
     margin-bottom: 35px;
 }
 
-/* CARDS */
+/* METRIC CARD */
 .metric-card {
     background: linear-gradient(145deg, #111827, #1E293B);
     padding: 30px;
@@ -164,7 +165,7 @@ AI-Powered Loan Approval & Credit Risk Analysis System
 """, unsafe_allow_html=True)
 
 # =========================================================
-# SIDEBAR
+# SIDEBAR INPUTS
 # =========================================================
 
 with st.sidebar:
@@ -207,7 +208,7 @@ with st.sidebar:
     )
 
 # =========================================================
-# TOP METRICS
+# DASHBOARD METRICS
 # =========================================================
 
 c1, c2, c3 = st.columns(3)
@@ -235,55 +236,60 @@ with c3:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-value">{employment_years} Years</div>
-        <div class="metric-label">Experience</div>
+        <div class="metric-label">Employment Experience</div>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 # =========================================================
-# INPUT DATAFRAME
+# CREATE INPUT DATA
 # =========================================================
 
-input_data = pd.DataFrame([{
+default_values = {
 
     "Age": age,
-
     "Income": income,
-
     "LoanAmount": loan_amount,
-
     "CreditScore": credit_score,
-
     "MonthsEmployed": employment_years * 12,
 
     "NumCreditLines": 4,
-
     "InterestRate": 12.5,
-
     "LoanTerm": 36,
-
     "DTIRatio": 0.35,
 
     "Education": 1,
-
     "EmploymentType": 1,
-
     "MaritalStatus": 1,
 
     "HasMortgage": 0,
-
     "HasDependents": 0,
-
     "LoanPurpose": 2,
-
     "HasCoSigner": 0
-
-}])
+}
 
 # =========================================================
-# MATCH TRAINING FEATURE ORDER
+# MATCH TRAINING FEATURES
 # =========================================================
+
+final_input = {}
+
+for feature in features:
+
+    if feature in default_values:
+
+        final_input[feature] = default_values[feature]
+
+    else:
+
+        final_input[feature] = 0
+
+# =========================================================
+# DATAFRAME
+# =========================================================
+
+input_data = pd.DataFrame([final_input])
 
 input_data = input_data[features]
 
@@ -295,18 +301,19 @@ if st.button("Predict Loan Approval"):
 
     try:
 
-        # SCALE DATA
+        # SCALE INPUT
         scaled_data = scaler.transform(input_data)
 
-        # PREDICTION
+        # MODEL PREDICTION
         prediction = model.predict(scaled_data)[0]
 
+        # PROBABILITY
         probability = model.predict_proba(
             scaled_data
         )[0][1] * 100
 
         # =================================================
-        # RISK LEVEL
+        # RISK ANALYSIS
         # =================================================
 
         if probability >= 75:
@@ -376,3 +383,4 @@ if st.button("Predict Loan Approval"):
     except Exception as e:
 
         st.error(f"Prediction Error: {e}")
+```

@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -383,4 +383,4 @@ if st.button("Predict Loan Approval"):
     except Exception as e:
 
         st.error(f"Prediction Error: {e}")
-```
+
